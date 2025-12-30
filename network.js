@@ -38,6 +38,16 @@ class NeuralNetwork{
             }
         });
     }
+
+    static crossover(network1, network2) {
+        const child = new NeuralNetwork(
+            network1.levels.map(l => l.inputs.length).concat([network1.levels[network1.levels.length - 1].outputs.length])
+        );
+        for (let i = 0; i < child.levels.length; i++) {
+            child.levels[i] = Level.crossover(network1.levels[i], network2.levels[i]);
+        }
+        return child;
+    }
 }
 
 class Level{
@@ -85,5 +95,18 @@ class Level{
         }
 
         return level.outputs;
+    }
+
+    static crossover(level1, level2) {
+        const child = new Level(level1.inputs.length, level1.outputs.length);
+        for (let i = 0; i < child.biases.length; i++) {
+            child.biases[i] = Math.random() > 0.5 ? level1.biases[i] : level2.biases[i];
+        }
+        for (let i = 0; i < child.weights.length; i++) {
+            for (let j = 0; j < child.weights[i].length; j++) {
+                child.weights[i][j] = Math.random() > 0.5 ? level1.weights[i][j] : level2.weights[i][j];
+            }
+        }
+        return child;
     }
 }

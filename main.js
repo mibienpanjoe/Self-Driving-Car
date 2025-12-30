@@ -12,10 +12,21 @@ const N=200;
 const cars=generateCars(N);
 let bestCar=cars[0];
 if(localStorage.getItem("bestBrain")){
+    const bestBrain = JSON.parse(localStorage.getItem("bestBrain"));
+    const secondBestBrain = localStorage.getItem("secondBestBrain") 
+        ? JSON.parse(localStorage.getItem("secondBestBrain")) 
+        : bestBrain;
+
     for(let i=0;i<cars.length;i++){
-        cars[i].brain=JSON.parse(
-            localStorage.getItem("bestBrain"));
-        if(i!=0){
+        if(i==0){
+            cars[i].brain=bestBrain;
+        }else if(i < N * 0.2){
+            // 20% are mutations of the best
+            cars[i].brain=JSON.parse(JSON.stringify(bestBrain));
+            NeuralNetwork.mutate(cars[i].brain,0.1);
+        }else{
+            // The rest are crossovers of best and second best
+            cars[i].brain=NeuralNetwork.crossover(bestBrain, secondBestBrain);
             NeuralNetwork.mutate(cars[i].brain,0.1);
         }
     }
@@ -34,12 +45,20 @@ const traffic=[
 animate();
 
 function save(){
+    // Find the second best car currently alive or finished
+    const sortedCars = [...cars].sort((a,b) => a.y - b.y);
+    const topCar = sortedCars[0];
+    const secondCar = sortedCars[1] || topCar;
+
     localStorage.setItem("bestBrain",
-        JSON.stringify(bestCar.brain));
+        JSON.stringify(topCar.brain));
+    localStorage.setItem("secondBestBrain",
+        JSON.stringify(secondCar.brain));
 }
 
 function discard(){
     localStorage.removeItem("bestBrain");
+    localStorage.removeItem("secondBestBrain");
 }
 
 function generateCars(N){
